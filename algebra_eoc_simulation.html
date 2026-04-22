@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algebra: Concepts &amp; Connections — EOC Practice Simulation</title>
+<style>
+  :root {
+    --navy:   #1D3461;
+    --blue:   #2E75B6;
+    --red:    #C0392B;
+    --green:  #1A7A4A;
+    --gold:   #E67E22;
+    --light:  #F0F4FA;
+    --border: #D6E0F0;
+    --gray:   #6B7A99;
+    --white:  #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--light);
+    min-height: 100vh;
+    color: #1a2336;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── REGISTRATION ── */
+  #reg-screen {
+    min-height: 100vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #1D3461 0%, #2a4a80 60%, #1a3a6e 100%);
+    padding: 24px;
+  }
+  #reg-screen.active { display: flex; }
+  .reg-card {
+    background: white;
+    border-radius: 18px;
+    padding: 44px 48px;
+    max-width: 560px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .badge {
+    display: inline-block;
+    background: #E8F0FB;
+    color: var(--navy);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 18px;
+  }
+  .reg-card h1 { font-size: 26px; font-weight: 800; color: var(--navy); line-height: 1.2; margin-bottom: 4px; }
+  .reg-card .subtitle { color: var(--red); font-weight: 600; font-size: 13px; margin-bottom: 28px; }
+  .info-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px; }
+  .info-box { background: var(--light); border-radius: 10px; padding: 12px; text-align: center; }
+  .info-box .val { font-size: 22px; font-weight: 800; color: var(--navy); }
+  .info-box .lbl { font-size: 11px; color: var(--gray); margin-top: 2px; }
+  .reg-card label { display: block; font-size: 11px; font-weight: 700; color: var(--gray); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 6px; margin-top: 16px; }
+  .reg-card input, .reg-card select { width: 100%; padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; transition: border-color .2s; }
+  .reg-card input:focus, .reg-card select:focus { border-color: var(--blue); }
+  .start-btn { width: 100%; margin-top: 28px; padding: 15px; background: var(--navy); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: .3px; transition: background .2s; }
+  .start-btn:hover { background: #2a4a80; }
+  .reg-note { margin-top: 14px; font-size: 11px; color: var(--gray); text-align: center; line-height: 1.5; }
+
+  /* ── QUIZ ── */
+  #quiz-screen { max-width: 820px; margin: 0 auto; padding: 20px 16px 60px; }
+  .quiz-header {
+    background: var(--navy); color: white; border-radius: 14px; padding: 14px 22px;
+    margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 100;
+  }
+  .student-name { font-weight: 700; font-size: 15px; }
+  .student-sub  { font-size: 12px; opacity: .75; margin-top: 1px; }
+  .progress-wrap { flex: 1; min-width: 180px; }
+  .progress-label { font-size: 11px; opacity: .75; margin-bottom: 4px; text-align: right; }
+  .progress-bar { height: 8px; background: rgba(255,255,255,.2); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #5EC8F2; border-radius: 999px; transition: width .3s; }
+  .timer-pill { background: rgba(255,255,255,.15); border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700; letter-spacing: .5px; min-width: 72px; text-align: center; }
+  .timer-pill.warn { background: rgba(230,126,34,.6); }
+
+  .q-card { background: white; border-radius: 14px; padding: 28px 32px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(29,52,97,.07); border: 2px solid transparent; transition: border-color .15s; }
+  .q-card.answered { border-color: var(--border); }
+  .q-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .q-num { font-size: 12px; font-weight: 700; color: var(--gray); letter-spacing: .5px; text-transform: uppercase; }
+  .domain-tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; letter-spacing: .3px; }
+  .tag-PAR { background: #FEF0E6; color: #C0392B; }
+  .tag-GSR { background: #EAF4FB; color: #1A5276; }
+  .tag-NR  { background: #EAFAF1; color: #1A7A4A; }
+  .tag-FGR { background: #F4ECF7; color: #6C3483; }
+  .tag-DSR { background: #FEF9E7; color: #7D6608; }
+  .dok-tag { font-size: 11px; color: var(--gray); border: 1px solid var(--border); padding: 2px 8px; border-radius: 999px; }
+  .vocab-btn { margin-left: auto; background: none; border: 1.5px solid var(--gold); color: var(--gold); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all .15s; white-space: nowrap; }
+  .vocab-btn.flagged { background: var(--gold); color: white; }
+  .vocab-btn:hover { opacity: .8; }
+
+  .q-stem { font-size: 16px; font-weight: 500; line-height: 1.55; margin-bottom: 18px; color: #1a2336; }
+  .q-stem sup, .choice-text sup, .review-stem sup, .review-choice-text sup { font-size: 10px; vertical-align: super; line-height: 0; }
+  .q-stem sub, .choice-text sub, .review-stem sub, .review-choice-text sub { font-size: 10px; vertical-align: sub;   line-height: 0; }
+
+  .choices { display: flex; flex-direction: column; gap: 8px; }
+  .choice-btn { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px; background: white; cursor: pointer; text-align: left; font-family: inherit; font-size: 15px; line-height: 1.45; transition: border-color .15s, background .15s; width: 100%; }
+  .choice-btn:hover { border-color: var(--blue); background: #F5F8FE; }
+  .choice-btn.selected { border-color: var(--blue); background: #EBF3FB; }
+  .choice-btn.correct  { border-color: var(--green); background: #EAFAF1; }
+  .choice-btn.wrong    { border-color: var(--red);   background: #FDEDEC; }
+  .choice-letter { min-width: 28px; height: 28px; border-radius: 50%; background: var(--light); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--gray); flex-shrink: 0; transition: all .15s; }
+  .choice-btn.selected .choice-letter { background: var(--blue);  border-color: var(--blue);  color: white; }
+  .choice-btn.correct  .choice-letter { background: var(--green); border-color: var(--green); color: white; }
+  .choice-btn.wrong    .choice-letter { background: var(--red);   border-color: var(--red);   color: white; }
+
+  .feedback-row { display: none; align-items: center; gap: 10px; margin-top: 14px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+  .feedback-row.correct { background: #EAFAF1; color: var(--green); display: flex; }
+  .feedback-row.wrong   { background: #FDEDEC; color: var(--red);   display: flex; }
+
+  .quiz-nav { position: sticky; bottom: 0; background: white; border-top: 2px solid var(--border); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .nav-btn { padding: 11px 24px; border-radius: 10px; border: 2px solid var(--border); background: white; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--navy); cursor: pointer; transition: all .15s; }
+  .nav-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .nav-btn.primary { background: var(--navy); border-color: var(--navy); color: white; }
+  .nav-btn.primary:hover { background: #2a4a80; border-color: #2a4a80; }
+  .nav-btn:disabled { opacity: .35; cursor: default; }
+  .q-counter { font-size: 13px; color: var(--gray); font-weight: 600; }
+
+  /* ── RESULTS ── */
+  #results-screen { max-width: 820px; margin: 0 auto; padding: 28px 16px 60px; }
+  .results-hero { background: var(--navy); border-radius: 18px; padding: 36px; color: white; text-align: center; margin-bottom: 24px; }
+  .results-hero h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: .7; margin-bottom: 10px; }
+  .score-circle { width: 130px; height: 130px; border-radius: 50%; border: 6px solid rgba(255,255,255,.3); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .score-pct { font-size: 36px; font-weight: 800; line-height: 1; }
+  .score-sub { font-size: 12px; opacity: .7; margin-top: 2px; }
+  .level-badge { display: inline-block; padding: 7px 20px; border-radius: 999px; font-size: 13px; font-weight: 700; letter-spacing: .3px; margin-bottom: 8px; }
+  .level-distinguished { background: #27AE60; color: white; }
+  .level-proficient    { background: #2980B9; color: white; }
+  .level-developing    { background: #E67E22; color: white; }
+  .level-beginning     { background: #C0392B; color: white; }
+
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .results-grid { grid-template-columns: 1fr; } }
+  .results-card { background: white; border-radius: 14px; padding: 22px 24px; box-shadow: 0 2px 10px rgba(29,52,97,.07); }
+  .results-card h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--gray); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--light); }
+
+  .domain-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  .domain-name { font-size: 13px; font-weight: 600; flex: 1; }
+  .domain-score { font-size: 13px; font-weight: 700; color: var(--navy); min-width: 44px; text-align: right; }
+  .domain-bar-wrap { flex: 1; height: 8px; background: var(--light); border-radius: 999px; overflow: hidden; min-width: 80px; }
+  .domain-bar { height: 100%; border-radius: 999px; transition: width .6s ease; }
+  .bar-green  { background: var(--green); }
+  .bar-yellow { background: var(--gold);  }
+  .bar-red    { background: var(--red);   }
+
+  .dok-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+  .dok-label { font-weight: 600; width: 60px; }
+  .dok-bar-wrap { flex: 1; height: 8px; background: var(--light); border-radius: 999px; overflow: hidden; }
+  .dok-bar { height: 100%; border-radius: 999px; }
+  .dok-score { font-weight: 700; color: var(--navy); min-width: 44px; text-align: right; }
+
+  .vocab-result { font-size: 13px; line-height: 1.6; }
+  .vocab-pill { display: inline-block; background: #FEF0E6; color: var(--gold); border: 1.5px solid var(--gold); padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; margin: 2px 3px; }
+
+  .submit-status { margin-top: 0; padding: 13px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; text-align: center; background: #EAFAF1; color: var(--green); }
+  .submit-status.pending { background: #EBF5FB; color: var(--blue); }
+  .submit-status.error   { background: #FDEDEC; color: var(--red);  }
+
+  .review-toggle-btn { width: 100%; padding: 13px; background: white; border: 2px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--navy); cursor: pointer; margin-top: 8px; transition: all .15s; }
+  .review-toggle-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  #review-section { margin-top: 16px; }
+  .review-item { background: white; border-radius: 12px; padding: 20px 24px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(29,52,97,.06); border-left: 4px solid var(--border); }
+  .review-item.correct-item { border-left-color: var(--green); }
+  .review-item.wrong-item   { border-left-color: var(--red);   }
+  .review-q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: .3px; }
+  .review-stem { font-size: 14px; font-weight: 500; margin-bottom: 10px; line-height: 1.5; }
+  .review-answers { font-size: 13px; color: var(--gray); }
+  .review-answers .your-ans  { color: var(--red);   font-weight: 600; }
+  .review-answers .right-ans { color: var(--green); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- REGISTRATION -->
+<div id="reg-screen" class="screen active">
+  <div class="reg-card">
+    <div class="badge">Georgia Milestones EOC</div>
+    <h1>Algebra: Concepts &amp; Connections</h1>
+    <p class="subtitle">EOC Practice Simulation</p>
+    <div class="info-row">
+      <div class="info-box"><div class="val">58</div><div class="lbl">Questions</div></div>
+      <div class="info-box"><div class="val">5</div><div class="lbl">Domains</div></div>
+      <div class="info-box"><div class="val">MC</div><div class="lbl">Format</div></div>
+    </div>
+    <label for="student-name">Full Name</label>
+    <input type="text" id="student-name" placeholder="First and Last Name" autocomplete="off">
+    <label for="student-period">Period</label>
+    <select id="student-period">
+      <option value="">-- Select Period --</option>
+      <option value="1">Period 1</option>
+      <option value="2">Period 2</option>
+      <option value="3">Period 3</option>
+      <option value="4">Period 4</option>
+      <option value="5">Period 5</option>
+      <option value="6">Period 6</option>
+      <option value="7">Period 7</option>
+    </select>
+    <button class="start-btn" id="start-btn">Begin Simulation</button>
+    <p class="reg-note">Your results will be submitted to your teacher automatically when you finish.</p>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-screen" class="screen">
+  <div class="quiz-header">
+    <div>
+      <div class="student-name" id="header-name"></div>
+      <div class="student-sub" id="header-sub"></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label" id="progress-label">0 / 58 answered</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="timer-pill" id="timer">0:00</div>
+  </div>
+  <div id="questions-container"></div>
+  <div class="quiz-nav">
+    <button class="nav-btn" id="prev-btn">&#8592; Previous</button>
+    <span class="q-counter" id="q-counter">Question 1 of 58</span>
+    <button class="nav-btn primary" id="next-btn">Next &#8594;</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results-screen" class="screen">
+  <div class="results-hero">
+    <h2>Simulation Complete</h2>
+    <div class="score-circle">
+      <div class="score-pct" id="res-pct">--</div>
+      <div class="score-sub" id="res-points">--</div>
+    </div>
+    <div class="level-badge" id="res-level">--</div>
+    <div style="font-size:13px;opacity:.75;" id="res-name-line"></div>
+  </div>
+  <div class="results-grid">
+    <div class="results-card">
+      <h3>Domain Performance</h3>
+      <div id="domain-results"></div>
+    </div>
+    <div class="results-card">
+      <h3>DOK Performance</h3>
+      <div id="dok-results"></div>
+      <h3 style="margin-top:20px;">Vocab Flags</h3>
+      <div id="vocab-results" class="vocab-result"></div>
+    </div>
+  </div>
+  <div class="results-card" style="margin-bottom:12px;">
+    <div id="submit-status" class="submit-status pending">Submitting results to your teacher...</div>
+  </div>
+  <button class="review-toggle-btn" id="review-toggle-btn">Show Answer Review</button>
+  <div id="review-section" style="display:none;"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWMl4_-JeDFKcFSheeNPpiJKyPynY3wmbEiDYfyOvOrbpOspYZlrGnyTYmDLb5Jl9R/exec';
+
+// ══════════════════════════════════════════════════════════════
+// QUESTION BANK  (58 questions, all verified)
+// ══════════════════════════════════════════════════════════════
+const QUESTIONS_RAW = [
+  // ── A.PAR (14) ──
+  { domain:'PAR', dok:2, stem:'A sequence is defined by the rule a_n = 3n &minus; 1. Which of the following is the 8th term of the sequence?', choices:['21','23','24','25'], answer:'B' },
+  { domain:'PAR', dok:2, stem:'The first four terms of a sequence are 5, 11, 17, 23. Which explicit formula represents this sequence?', choices:['a_n = 5n + 1','a_n = 6n &minus; 1','a_n = 6n + 1','a_n = 5n &minus; 1'], answer:'B' },
+  { domain:'PAR', dok:2, stem:'A geometric sequence begins 4, 12, 36, 108, &hellip; What is the 6th term?', choices:['324','648','972','1,296'], answer:'C' },
+  { domain:'PAR', dok:2, stem:'A recursive sequence is defined as a_1 = 7 and a_n = a_(n&minus;1) + 4. What is a_5?', choices:['19','21','23','27'], answer:'C' },
+  { domain:'PAR', dok:2, stem:'Which of the following recursive rules generates the sequence 2, 6, 18, 54, &hellip;?', choices:['a_1 = 2; a_n = a_(n&minus;1) + 4','a_1 = 2; a_n = 3 &middot; a_(n&minus;1)','a_1 = 2; a_n = a_(n&minus;1) + 6','a_1 = 2; a_n = 2 &middot; a_(n&minus;1) + 2'], answer:'B' },
+  { domain:'PAR', dok:2, stem:'A table of values shows: x = 1, 2, 3, 4 and y = &minus;3, 1, 5, 9. Which equation represents this relationship?', choices:['y = 4x &minus; 7','y = 3x &minus; 4','y = 4x + 1','y = 3x &minus; 6'], answer:'A' },
+  { domain:'PAR', dok:2, stem:'The 3rd term of an arithmetic sequence is 14 and the 7th term is 30. What is the common difference?', choices:['3','4','5','6'], answer:'B' },
+  { domain:'PAR', dok:2, stem:'Which sequence is arithmetic?', choices:['2, 4, 8, 16','1, 4, 9, 16','3, 7, 11, 15','5, 10, 20, 40'], answer:'C' },
+  { domain:'PAR', dok:2, stem:'Jalisa saves $35 the first week and increases her savings by $12 each week. How much will she save in week 9?', choices:['$131','$108','$119','$143'], answer:'A' },
+  { domain:'PAR', dok:2, stem:'A pattern has 3 tiles in row 1, 7 tiles in row 2, and 11 tiles in row 3. If the pattern continues, how many tiles will be in row 10?', choices:['37','39','41','43'], answer:'B' },
+  { domain:'PAR', dok:3, stem:'Two sequences are given. Sequence A: a_n = 2n + 5. Sequence B: b_1 = 7, b_n = b_(n&minus;1) + 2. Which statement correctly compares these sequences?', choices:['They are the same sequence because both start at 7 and increase by 2.','Sequence A grows faster because its explicit formula has a coefficient of 2.','They produce different values because Sequence A begins at n = 1 giving 7, but increases differently.','They cannot be compared because one is explicit and one is recursive.'], answer:'A' },
+  { domain:'PAR', dok:2, stem:'A geometric sequence has a first term of 5 and a common ratio of &minus;2. What is the 4th term?', choices:['&minus;40','40','&minus;80','80'], answer:'A' },
+  { domain:'PAR', dok:2, stem:'Which explicit formula generates the terms 10, 7, 4, 1, &minus;2, &hellip;?', choices:['a_n = 10 &minus; 3n','a_n = 13 &minus; 3n','a_n = &minus;3n + 7','a_n = 3n &minus; 7'], answer:'B' },
+  { domain:'PAR', dok:3, stem:'A bacteria culture triples every hour. At hour 1 there are 9 bacteria. At which hour will there first be more than 2,000 bacteria?', choices:['Hour 5','Hour 6','Hour 7','Hour 8'], answer:'B' },
+
+  // ── A.GSR.3 (12) ──
+  { domain:'GSR', dok:2, stem:'Point A is at (2, 5) and point B is at (8, 13). What is the midpoint of segment AB?', choices:['(4, 7)','(5, 9)','(6, 9)','(3, 8)'], answer:'B' },
+  { domain:'GSR', dok:2, stem:'What is the distance between the points (&minus;3, 1) and (5, 7)?', choices:['8','10','12','14'], answer:'B' },
+  { domain:'GSR', dok:2, stem:'A line passes through (0, &minus;2) and (4, 6). What is the slope of the line?', choices:['1','2','3','4'], answer:'B' },
+  { domain:'GSR', dok:2, stem:'Which equation represents a line that is parallel to y = &minus;3x + 5?', choices:['y = 3x &minus; 1','y = (1/3)x + 2','y = &minus;3x &minus; 7','y = &minus;(1/3)x + 5'], answer:'C' },
+  { domain:'GSR', dok:2, stem:'Triangle ABC has vertices at A(0, 0), B(4, 0), and C(4, 3). What is the perimeter of the triangle?', choices:['10','11','12','13'], answer:'C' },
+  { domain:'GSR', dok:2, stem:'A rectangle has vertices at (1, 2), (5, 2), (5, 7), and (1, 7). What is the area of the rectangle?', choices:['16','18','20','22'], answer:'C' },
+  { domain:'GSR', dok:2, stem:'Point P is at (&minus;4, 6). If point P is reflected across the x-axis, what are the coordinates of the image?', choices:['(4, 6)','(&minus;4, &minus;6)','(4, &minus;6)','(&minus;6, &minus;4)'], answer:'B' },
+  { domain:'GSR', dok:2, stem:'A line segment has endpoints at (1, 3) and (7, 3). What is the length of the segment?', choices:['4','5','6','7'], answer:'C' },
+  { domain:'GSR', dok:3, stem:'Square ABCD has vertices A(1, 1), B(4, 1), C(4, 4), and D(1, 4). The square is translated 3 units right and 2 units down. What are the new coordinates of vertex C?', choices:['(7, 2)','(6, 3)','(7, 3)','(6, 2)'], answer:'A' },
+  { domain:'GSR', dok:2, stem:'Which of the following pairs of slopes represents perpendicular lines?', choices:['2 and 2','3 and &minus;3','4 and &minus;(1/4)','5 and (1/5)'], answer:'C' },
+  { domain:'GSR', dok:2, stem:'A point is located 5 units to the left and 3 units above the origin. Which ordered pair represents this point?', choices:['(5, 3)','(&minus;5, 3)','(5, &minus;3)','(&minus;5, &minus;3)'], answer:'B' },
+  { domain:'GSR', dok:3, stem:'A delivery driver travels from warehouse W at (0, 0) to stop A at (3, 4) and then to stop B at (9, 4). What is the total distance traveled, in units?', choices:['10','11','12','13'], answer:'B' },
+
+  // ── A.NR.5 (11) ──
+  { domain:'NR', dok:2, stem:'Which of the following is an irrational number?', choices:['&radic;16','&radic;25','&radic;30','0.75'], answer:'C' },
+  { domain:'NR', dok:2, stem:'Which expression is equivalent to x^(3/2)?', choices:['(&radic;x)^3','x^2 &middot; x^(1/2)','3&radic;x &middot; 2','x&radic;3'], answer:'A' },
+  { domain:'NR', dok:2, stem:'Simplify: (2x^3)(5x^4)', choices:['7x^7','10x^7','10x^12','7x^12'], answer:'B' },
+  { domain:'NR', dok:2, stem:'Which value is between &radic;50 and &radic;70 on the number line?', choices:['6','7','8','9'], answer:'C' },
+  { domain:'NR', dok:2, stem:'A rectangular garden has an area of 72 square feet. The length is 6&radic;2 feet. What is the width?', choices:['6&radic;2 ft','12&radic;2 ft','3&radic;2 ft','4&radic;2 ft'], answer:'A' },
+  { domain:'NR', dok:2, stem:'Simplify: (x^5) / (x^2)', choices:['x^3','x^7','x^10','x^(5/2)'], answer:'A' },
+  { domain:'NR', dok:2, stem:'Which correctly orders these numbers from least to greatest? &radic;5, 2.3, 7/3, 2.1', choices:['2.1, &radic;5, 2.3, 7/3','2.1, 2.3, &radic;5, 7/3','&radic;5, 2.1, 2.3, 7/3','2.1, 7/3, 2.3, &radic;5'], answer:'A' },
+  { domain:'NR', dok:2, stem:'What is the value of 27^(2/3)?', choices:['3','6','9','18'], answer:'C' },
+  { domain:'NR', dok:2, stem:'Which expression is equivalent to &radic;72?', choices:['6&radic;2','8&radic;3','4&radic;18','36&radic;2'], answer:'A' },
+  { domain:'NR', dok:3, stem:'A square sandbox has an area of 50 square feet. A contractor needs to buy fencing for all 4 sides. Which is the most reasonable estimate for the total fencing needed?', choices:['About 28 feet','About 30 feet','About 32 feet','About 35 feet'], answer:'A' },
+  { domain:'NR', dok:2, stem:'Which of the following is NOT equivalent to 8^(1/3)?', choices:['\u221b8','2','8^0.333','&radic;8'], answer:'D' },
+
+  // ── A.FGR (11) ──
+  { domain:'FGR', dok:2, stem:'The function f(x) = 2x &minus; 4. What is f(7)?', choices:['8','10','12','14'], answer:'B' },
+  { domain:'FGR', dok:2, stem:'Which graph represents a function?', choices:['A circle centered at the origin','A vertical line at x = 3','A diagonal line from lower left to upper right','A sideways parabola opening to the right'], answer:'C' },
+  { domain:'FGR', dok:2, stem:'A linear function passes through (0, 4) and (3, &minus;2). What is the slope?', choices:['&minus;3','&minus;2','2','3'], answer:'B' },
+  { domain:'FGR', dok:2, stem:'The table shows x: 0, 1, 2, 3 and y: 5, 8, 11, 14. Which equation represents this function?', choices:['y = 3x + 5','y = 3x &minus; 5','y = 5x + 3','y = 2x + 5'], answer:'A' },
+  { domain:'FGR', dok:2, stem:'Which of the following is the domain of f(x) = &radic;(x &minus; 3)?', choices:['x &gt; 0','x &ge; 3','x &le; 3','All real numbers'], answer:'B' },
+  { domain:'FGR', dok:2, stem:'A gym charges a $25 sign-up fee plus $15 per month. Which function represents the total cost C after m months?', choices:['C(m) = 25m + 15','C(m) = 15m &minus; 25','C(m) = 15m + 25','C(m) = 25 &minus; 15m'], answer:'C' },
+  { domain:'FGR', dok:2, stem:'For the function g(x) = x^2 &minus; 4, what is g(&minus;3)?', choices:['&minus;13','5','7','13'], answer:'B' },
+  { domain:'FGR', dok:3, stem:'Two functions are given: f(x) = x + 6 and g(x) = x^2. For what positive value of x does f(x) = g(x)?', choices:['x = 2','x = 3','x = 4','x = 5'], answer:'B' },
+  { domain:'FGR', dok:2, stem:'A linear function has a slope of 0. Which best describes its graph?', choices:['A vertical line','A diagonal line','A horizontal line','A curve'], answer:'C' },
+  { domain:'FGR', dok:2, stem:'A car travels at a constant speed. After 2 hours it has gone 110 miles; after 5 hours, 275 miles. Which function models the distance d after t hours?', choices:['d(t) = 50t + 10','d(t) = 55t','d(t) = 60t &minus; 10','d(t) = 45t + 20'], answer:'B' },
+  { domain:'FGR', dok:3, stem:'A plumber charges $80 for the first hour and $50 for each additional hour. An electrician charges $60 per hour with no base fee. After how many total hours will both professionals have charged the same amount?', choices:['2 hours','3 hours','4 hours','5 hours'], answer:'B' },
+
+  // ── A.DSR.10 (10) ──
+  { domain:'DSR', dok:2, stem:'A data set has values: 4, 7, 7, 9, 11, 14, 18. What is the median?', choices:['7','8','9','11'], answer:'C' },
+  { domain:'DSR', dok:2, stem:'A scatter plot shows data points rising from left to right with some spread. Which best describes the correlation?', choices:['Strong negative correlation','Weak negative correlation','Weak positive correlation','No correlation'], answer:'C' },
+  { domain:'DSR', dok:2, stem:'Which measure of center is MOST affected by an outlier in a data set?', choices:['Median','Mode','Mean','Range'], answer:'C' },
+  { domain:'DSR', dok:2, stem:'A line of best fit is y = 3x + 12. What is the predicted y-value when x = 8?', choices:['32','36','38','40'], answer:'B' },
+  { domain:'DSR', dok:2, stem:'The ages of 6 students are: 14, 15, 14, 16, 15, 18. What is the mean age?', choices:['14.5','15','15.3','15.5'], answer:'C' },
+  { domain:'DSR', dok:2, stem:'A data set has Q1 = 10 and Q3 = 24. What is the interquartile range (IQR)?', choices:['8','14','20','25'], answer:'B' },
+  { domain:'DSR', dok:3, stem:'Class A has a mean of 78 and a standard deviation of 12. Class B has a mean of 78 and a standard deviation of 3. Which statement is accurate?', choices:['Class A performed better because their scores were more consistent.','Class B performed better because their scores were more consistent.','Both classes performed equally because their means are the same.','Class A has more students than Class B.'], answer:'B' },
+  { domain:'DSR', dok:2, stem:'A line of best fit has a negative slope. Which best describes the relationship between the two variables?', choices:['As x increases, y increases.','As x increases, y decreases.','There is no relationship.','The variables are equal.'], answer:'B' },
+  { domain:'DSR', dok:2, stem:'A data set is: 3, 5, 5, 7, 9, 9, 9, 11. What is the mode?', choices:['5','7','9','11'], answer:'C' },
+  { domain:'DSR', dok:2, stem:'A researcher finds r = 0.91 between hours studied and test scores. What does this suggest?', choices:['There is no relationship between hours studied and scores.','Students who study more tend to score higher.','Studying causes higher test scores.','There is a moderate negative correlation.'], answer:'B' },
+];
+
+// ══════════════════════════════════════════════════════════════
+// MATH NOTATION RENDERER
+// ══════════════════════════════════════════════════════════════
+function mathHTML(text) {
+  text = text.replace(/_\(([^)]+)\)/g, (_, m) => `<sub>(${m})</sub>`);
+  text = text.replace(/_([A-Za-z0-9])/g,  (_, m) => `<sub>${m}</sub>`);
+  text = text.replace(/\^\(([^)]+)\)/g,   (_, m) => `<sup>(${m})</sup>`);
+  text = text.replace(/\^([A-Za-z0-9])/g, (_, m) => `<sup>${m}</sup>`);
+  return text;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SHUFFLE (seeded, deterministic)
+// ══════════════════════════════════════════════════════════════
+function seededShuffle(arr) {
+  let seed = 42;
+  const rand = () => { seed = (seed * 1664525 + 1013904223) & 0xffffffff; return (seed >>> 0) / 0xffffffff; };
+  const a = arr.map((q, i) => ({ ...q, origIndex: i }));
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const QUESTIONS = seededShuffle(QUESTIONS_RAW);
+const TOTAL = QUESTIONS.length;
+
+const DOMAIN_META = {
+  PAR: { label:'A.PAR',    full:'Patterning & Algebraic Reasoning',  tagClass:'tag-PAR' },
+  GSR: { label:'A.GSR.3',  full:'Geometric & Spatial Reasoning',     tagClass:'tag-GSR' },
+  NR:  { label:'A.NR.5',   full:'Numerical Reasoning',               tagClass:'tag-NR'  },
+  FGR: { label:'A.FGR',    full:'Functional & Graphical Reasoning',  tagClass:'tag-FGR' },
+  DSR: { label:'A.DSR.10', full:'Data & Statistical Reasoning',      tagClass:'tag-DSR' },
+};
+
+// State
+let studentName   = '';
+let studentPeriod = '';
+let currentQ      = 0;
+let answers       = new Array(TOTAL).fill(null);
+let vocabFlags    = new Set();
+let startTime     = null;
+let timerInterval = null;
+
+// ══════════════════════════════════════════════════════════════
+// REGISTRATION
+// ══════════════════════════════════════════════════════════════
+document.getElementById('start-btn').addEventListener('click', function () {
+  const nameVal   = document.getElementById('student-name').value.trim();
+  const periodVal = document.getElementById('student-period').value;
+  if (!nameVal)   { alert('Please enter your full name.'); return; }
+  if (!periodVal) { alert('Please select your period.');  return; }
+  studentName   = nameVal;
+  studentPeriod = periodVal;
+  startSimulation();
+});
+
+function startSimulation() {
+  document.getElementById('reg-screen').classList.remove('active');
+  document.getElementById('quiz-screen').classList.add('active');
+  document.getElementById('header-name').textContent = studentName;
+  document.getElementById('header-sub').textContent  = `Period ${studentPeriod}  |  Algebra: C&C EOC`;
+  startTime = Date.now();
+  timerInterval = setInterval(updateTimer, 1000);
+  buildAllQuestions();
+  showQuestion(0);
+}
+
+// ══════════════════════════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════════════════════════
+function updateTimer() {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const m = Math.floor(elapsed / 60), s = elapsed % 60;
+  const el = document.getElementById('timer');
+  el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  el.className = 'timer-pill' + (m >= 50 ? ' warn' : '');
+}
+function getTimeSpent() {
+  return `${Math.floor((Date.now() - startTime) / 60000)} min`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// BUILD ALL QUESTION CARDS
+// ══════════════════════════════════════════════════════════════
+function buildAllQuestions() {
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+  const letters = ['A','B','C','D'];
+
+  QUESTIONS.forEach((q, idx) => {
+    const dm   = DOMAIN_META[q.domain];
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `q-card-${idx}`;
+    card.style.display = 'none';
+
+    card.innerHTML = `
+      <div class="q-meta">
+        <span class="q-num">Question ${idx + 1} of ${TOTAL}</span>
+        <span class="domain-tag ${dm.tagClass}">${dm.label}</span>
+        <span class="dok-tag">DOK ${q.dok}</span>
+        <button class="vocab-btn" id="vocab-btn-${idx}" data-idx="${idx}">&#9873; Vocab Flag</button>
+      </div>
+      <div class="q-stem">${mathHTML(q.stem)}</div>
+      <div class="choices" id="choices-${idx}">
+        ${letters.map((lt, ci) => `
+          <button class="choice-btn" data-idx="${idx}" data-choice="${lt}">
+            <span class="choice-letter">${lt}</span>
+            <span class="choice-text">${mathHTML(q.choices[ci])}</span>
+          </button>`).join('')}
+      </div>
+      <div class="feedback-row" id="feedback-${idx}"></div>`;
+
+    container.appendChild(card);
+  });
+
+  // Single delegated listener
+  container.addEventListener('click', function (e) {
+    const cb = e.target.closest('.choice-btn');
+    if (cb) { selectAnswer(parseInt(cb.dataset.idx), cb.dataset.choice); return; }
+    const vb = e.target.closest('.vocab-btn');
+    if (vb) { toggleVocabFlag(parseInt(vb.dataset.idx)); }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function showQuestion(idx) {
+  document.querySelectorAll('.q-card').forEach(c => c.style.display = 'none');
+  document.getElementById(`q-card-${idx}`).style.display = 'block';
+  currentQ = idx;
+  updateNav();
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateNav() {
+  document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of ${TOTAL}`;
+  document.getElementById('prev-btn').disabled = (currentQ === 0);
+  const nb = document.getElementById('next-btn');
+  if (currentQ === TOTAL - 1) { nb.textContent = 'Submit \u2192'; nb.classList.add('primary'); }
+  else                         { nb.textContent = 'Next \u2192'; }
+}
+
+function updateProgress() {
+  const n   = answers.filter(a => a !== null).length;
+  const pct = Math.round((n / TOTAL) * 100);
+  document.getElementById('progress-fill').style.width  = pct + '%';
+  document.getElementById('progress-label').textContent = `${n} / ${TOTAL} answered`;
+}
+
+document.getElementById('prev-btn').addEventListener('click', function () {
+  if (currentQ > 0) showQuestion(currentQ - 1);
+});
+
+document.getElementById('next-btn').addEventListener('click', function () {
+  if (currentQ < TOTAL - 1) {
+    showQuestion(currentQ + 1);
+  } else {
+    const unanswered = answers.filter(a => a === null).length;
+    if (unanswered > 0) {
+      const go = confirm(`You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Submit anyway?`);
+      if (!go) return;
+    }
+    clearInterval(timerInterval);
+    showResults();
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// ANSWER SELECTION
+// ══════════════════════════════════════════════════════════════
+function selectAnswer(idx, choice) {
+  answers[idx] = choice;
+  const q = QUESTIONS[idx];
+  const letters = ['A','B','C','D'];
+  document.querySelectorAll(`#choices-${idx} .choice-btn`).forEach((btn, ci) => {
+    btn.classList.remove('selected','correct','wrong');
+    const lt = letters[ci];
+    if (lt === choice && lt === q.answer)    btn.classList.add('correct');
+    else if (lt === choice)                  btn.classList.add('wrong');
+    else if (lt === q.answer)                btn.classList.add('correct');
+  });
+  const fb = document.getElementById(`feedback-${idx}`);
+  if (choice === q.answer) {
+    fb.className = 'feedback-row correct';
+    fb.innerHTML = '&#10003; Correct!';
+  } else {
+    fb.className = 'feedback-row wrong';
+    fb.innerHTML = `&#10007; Incorrect &mdash; the correct answer is <strong>${q.answer}</strong>.`;
+  }
+  document.getElementById(`q-card-${idx}`).classList.add('answered');
+  updateProgress();
+}
+
+// ══════════════════════════════════════════════════════════════
+// VOCAB FLAG
+// ══════════════════════════════════════════════════════════════
+function toggleVocabFlag(idx) {
+  const btn = document.getElementById(`vocab-btn-${idx}`);
+  if (vocabFlags.has(idx)) {
+    vocabFlags.delete(idx);
+    btn.classList.remove('flagged');
+    btn.innerHTML = '&#9873; Vocab Flag';
+  } else {
+    vocabFlags.add(idx);
+    btn.classList.add('flagged');
+    btn.innerHTML = '&#9873; Flagged';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// RESULTS
+// ══════════════════════════════════════════════════════════════
+function showResults() {
+  document.getElementById('quiz-screen').classList.remove('active');
+  document.getElementById('results-screen').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  let correct = 0;
+  answers.forEach((ans, i) => { if (ans === QUESTIONS[i].answer) correct++; });
+  const pct = correct / TOTAL;
+
+  let level, levelClass;
+  if (pct >= 0.85)      { level = 'Distinguished Learner'; levelClass = 'level-distinguished'; }
+  else if (pct >= 0.60) { level = 'Proficient Learner';    levelClass = 'level-proficient';    }
+  else if (pct >= 0.40) { level = 'Developing Learner';    levelClass = 'level-developing';    }
+  else                  { level = 'Beginning Learner';     levelClass = 'level-beginning';     }
+
+  document.getElementById('res-pct').textContent    = Math.round(pct * 100) + '%';
+  document.getElementById('res-points').textContent = `${correct} / ${TOTAL} correct`;
+  const lb = document.getElementById('res-level');
+  lb.textContent = level; lb.className = 'level-badge ' + levelClass;
+  document.getElementById('res-name-line').textContent = `${studentName}  |  Period ${studentPeriod}`;
+
+  // Domain stats
+  const ds = {};
+  Object.keys(DOMAIN_META).forEach(k => ds[k] = { correct:0, total:0 });
+  QUESTIONS.forEach((q, i) => {
+    ds[q.domain].total++;
+    if (answers[i] === q.answer) ds[q.domain].correct++;
+  });
+
+  const domainEl = document.getElementById('domain-results');
+  domainEl.innerHTML = '';
+  Object.entries(ds).forEach(([key, stat]) => {
+    const dm   = DOMAIN_META[key];
+    const dpct = stat.total > 0 ? stat.correct / stat.total : 0;
+    const barClass = dpct >= 0.60 ? 'bar-green' : dpct >= 0.50 ? 'bar-yellow' : 'bar-red';
+    domainEl.innerHTML += `
+      <div class="domain-row">
+        <div class="domain-name">${dm.label}</div>
+        <div class="domain-bar-wrap"><div class="domain-bar ${barClass}" style="width:${Math.round(dpct*100)}%"></div></div>
+        <div class="domain-score">${stat.correct}/${stat.total}</div>
+      </div>`;
+  });
+
+  // DOK stats
+  const dokStats = { 2:{ correct:0, total:0 }, 3:{ correct:0, total:0 } };
+  QUESTIONS.forEach((q, i) => {
+    dokStats[q.dok].total++;
+    if (answers[i] === q.answer) dokStats[q.dok].correct++;
+  });
+  const dokEl = document.getElementById('dok-results');
+  dokEl.innerHTML = '';
+  [2, 3].forEach(d => {
+    const s = dokStats[d];
+    const dpct = s.total > 0 ? s.correct / s.total : 0;
+    const barClass = dpct >= 0.60 ? 'bar-green' : dpct >= 0.50 ? 'bar-yellow' : 'bar-red';
+    dokEl.innerHTML += `
+      <div class="dok-row">
+        <div class="dok-label">DOK ${d}</div>
+        <div class="dok-bar-wrap"><div class="dok-bar ${barClass}" style="width:${Math.round(dpct*100)}%"></div></div>
+        <div class="dok-score">${s.correct}/${s.total}</div>
+      </div>`;
+  });
+
+  // Vocab flags
+  const vocabEl = document.getElementById('vocab-results');
+  if (vocabFlags.size === 0) {
+    vocabEl.textContent = 'No vocabulary flags recorded.';
+  } else {
+    const sorted = [...vocabFlags].sort((a,b) => a-b).map(i => i + 1);
+    vocabEl.innerHTML = `${sorted.length} item${sorted.length > 1 ? 's' : ''} flagged: `
+      + sorted.map(n => `<span class="vocab-pill">Q${n}</span>`).join('');
+  }
+
+  // Review toggle
+  document.getElementById('review-toggle-btn').addEventListener('click', function () {
+    const sec = document.getElementById('review-section');
+    if (sec.style.display === 'none') {
+      buildReview();
+      sec.style.display = 'block';
+      this.textContent = 'Hide Answer Review';
+    } else {
+      sec.style.display = 'none';
+      this.textContent = 'Show Answer Review';
+    }
+  });
+
+  submitResults(correct, pct, level, ds, dokStats);
+}
+
+// ══════════════════════════════════════════════════════════════
+// REVIEW
+// ══════════════════════════════════════════════════════════════
+function buildReview() {
+  const sec = document.getElementById('review-section');
+  sec.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  QUESTIONS.forEach((q, i) => {
+    const isCorrect = answers[i] === q.answer;
+    const dm  = DOMAIN_META[q.domain];
+    const div = document.createElement('div');
+    div.className = `review-item ${isCorrect ? 'correct-item' : 'wrong-item'}`;
+    const yourText  = answers[i]
+      ? `${answers[i]}. ${mathHTML(q.choices[letters.indexOf(answers[i])])}`
+      : 'Not answered';
+    const rightText = `${q.answer}. ${mathHTML(q.choices[letters.indexOf(q.answer)])}`;
+    div.innerHTML = `
+      <div class="review-q-header">
+        <span>Q${i+1}</span>
+        <span class="domain-tag ${dm.tagClass}">${dm.label}</span>
+        <span class="dok-tag">DOK ${q.dok}</span>
+        <span>${isCorrect ? '&#10003; Correct' : '&#10007; Incorrect'}</span>
+      </div>
+      <div class="review-stem">${mathHTML(q.stem)}</div>
+      <div class="review-answers">
+        ${!isCorrect ? `<div>Your answer: <span class="your-ans review-choice-text">${yourText}</span></div>` : ''}
+        <div>Correct answer: <span class="right-ans review-choice-text">${rightText}</span></div>
+      </div>`;
+    sec.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// SUBMIT TO GAS (image beacon)
+// ══════════════════════════════════════════════════════════════
+function submitResults(correct, pct, level, ds, dokStats) {
+  const statusEl = document.getElementById('submit-status');
+
+  const payload = {
+    studentName,
+    period:           studentPeriod,
+    overallScore:     Math.round(pct * 100) / 100,
+    pointsEarned:     `${correct}/${TOTAL}`,
+    itemsCorrect:     `${correct}/${TOTAL}`,
+    achievementLevel: level,
+    domain_GSR:       `${ds.GSR.correct}/${ds.GSR.total}`,
+    domain_NR:        `${ds.NR.correct}/${ds.NR.total}`,
+    domain_PAR:       `${ds.PAR.correct}/${ds.PAR.total}`,
+    domain_FGR:       `${ds.FGR.correct}/${ds.FGR.total}`,
+    domain_DSR:       `${ds.DSR.correct}/${ds.DSR.total}`,
+    dok1:             '0/0',
+    dok2:             `${dokStats[2].correct}/${dokStats[2].total}`,
+    dok3:             `${dokStats[3].correct}/${dokStats[3].total}`,
+    vocabFlagCount:   vocabFlags.size,
+    vocabFlags:       [...vocabFlags].sort((a,b) => a-b).map(i => i + 1),
+    timeSpent:        getTimeSpent()
+  };
+
+  try {
+    const img = new Image();
+    img.src = `${SCRIPT_URL}?data=${encodeURIComponent(JSON.stringify(payload))}`;
+    setTimeout(() => {
+      statusEl.className   = 'submit-status';
+      statusEl.textContent = '\u2713 Results submitted to your teacher!';
+    }, 5000);
+  } catch (err) {
+    statusEl.className   = 'submit-status error';
+    statusEl.textContent = '\u26a0 Could not submit. Show your teacher this screen or take a screenshot.';
+  }
+}
+</script>
+</body>
+</html>
